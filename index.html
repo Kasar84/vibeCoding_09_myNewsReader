@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="스포츠, 경제, 과학 주제의 최신 뉴스를 맞춤형으로 탐색하는 모던 뉴스 리더 웹 앱">
+  <meta name="keywords" content="뉴스 리더, 맞춤 뉴스, 스포츠, 경제, 과학, 실시간 뉴스">
+  <title>맞춤형 뉴스 리더 | Daily Pulse</title>
+  
+  <!-- Google Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Header / Navigation -->
+  <header class="app-header" id="app-header">
+    <div class="header-container">
+      <div class="brand-logo" id="brand-logo">
+        <span class="logo-icon">⚡</span>
+        <div class="logo-text">
+          <span class="logo-title">DAILY PULSE</span>
+          <span class="logo-subtitle">맞춤형 뉴스 리더</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="btn-api-key" id="btn-open-api-modal" title="GNews 무료 API 키 등록 시 실시간 한국어 최신 뉴스 연동">
+          <span class="key-icon">🔑</span>
+          <span class="key-text">무료 API 키 설정</span>
+        </button>
+        <div class="header-status" id="header-status">
+          <span class="status-indicator" id="status-indicator"></span>
+          <span class="status-text" id="api-status-text">최신 뉴스 모드</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-content" id="main-content">
+    
+    <!-- Hero / Filter Controls Section -->
+    <section class="control-section" id="control-section" aria-label="뉴스 주제 선택 및 검색">
+      <div class="control-card">
+        <div class="control-header">
+          <h1 class="control-title">관심 있는 주제를 선택하세요</h1>
+          <p class="control-desc">원하는 분야를 다중 선택하고 <strong>'뉴스 보기'</strong>를 클릭하면 각 분야의 최신 헤드라인을 피드에 구성해 드립니다.</p>
+        </div>
+
+        <!-- Category Multi-Select Chips -->
+        <div class="category-group" id="category-group" role="group" aria-label="주제 다중 선택">
+          <button type="button" class="category-chip active" data-category="sports" id="chip-sports" aria-pressed="true">
+            <span class="chip-icon">⚽</span>
+            <span class="chip-label">스포츠</span>
+            <span class="check-mark">✓</span>
+          </button>
+          <button type="button" class="category-chip active" data-category="economy" id="chip-economy" aria-pressed="true">
+            <span class="chip-icon">📈</span>
+            <span class="chip-label">경제</span>
+            <span class="check-mark">✓</span>
+          </button>
+          <button type="button" class="category-chip active" data-category="science" id="chip-science" aria-pressed="true">
+            <span class="chip-icon">🔬</span>
+            <span class="chip-label">과학</span>
+            <span class="check-mark">✓</span>
+          </button>
+        </div>
+
+        <!-- Action Bar: '뉴스 보기' Button & Stats -->
+        <div class="action-bar">
+          <button type="button" class="btn-primary" id="btn-fetch-news">
+            <span class="btn-icon">📰</span>
+            <span class="btn-text">뉴스 보기</span>
+            <span class="btn-glow"></span>
+          </button>
+          <div class="filter-summary" id="filter-summary">
+            선택된 주제: <span class="badge-count" id="selected-count">3개</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- News Feed Section -->
+    <section class="news-section" id="news-section" aria-label="뉴스 기사 피드">
+      <!-- Section Title & Meta Bar -->
+      <div class="feed-header" id="feed-header">
+        <div class="feed-info">
+          <h2 class="feed-title" id="feed-title">최신 헤드라인 피드</h2>
+          <span class="article-counter" id="article-counter">총 0개의 기사</span>
+        </div>
+        <div class="active-tags" id="active-tags">
+          <!-- Active category tags rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Responsive News Grid -->
+      <div class="news-grid" id="news-grid" role="feed" aria-busy="false">
+        <!-- News Card components will be injected dynamically here -->
+      </div>
+
+      <!-- Infinite Scroll Trigger / Loading Indicator -->
+      <div class="scroll-sentinel" id="scroll-sentinel">
+        <div class="loading-indicator" id="loading-indicator" style="display: none;">
+          <div class="spinner"></div>
+          <span class="loading-text">기사 10건을 더 불러오는 중...</span>
+        </div>
+        <div class="end-of-feed" id="end-of-feed" style="display: none;">
+          <span class="end-icon">🎉</span>
+          <p>모든 뉴스를 다 확인하셨습니다!</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Article Detail Modal -->
+  <div class="modal-overlay" id="article-modal-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-container" id="modal-container">
+      <button type="button" class="modal-close-btn" id="modal-close-btn" aria-label="모달 닫기">✕</button>
+      
+      <div class="modal-body" id="modal-body">
+        <div class="modal-meta-row">
+          <span class="modal-category-badge" id="modal-category-badge">카테고리</span>
+          <span class="modal-source" id="modal-source">출처</span>
+          <span class="modal-date" id="modal-date">발행일</span>
+        </div>
+
+        <h2 class="modal-title" id="modal-title">기사 제목이 표시됩니다</h2>
+
+        <div class="modal-image-wrapper">
+          <img src="" alt="기사 대표 이미지" id="modal-image" class="modal-image">
+        </div>
+
+        <div class="modal-content-text" id="modal-content-text">
+          <!-- Full article content will be rendered here -->
+        </div>
+
+        <div class="modal-footer">
+          <a href="#" target="_blank" rel="noopener noreferrer" class="btn-secondary" id="modal-original-link">
+            <span>원문 기사 보러가기</span>
+            <span class="external-icon">↗</span>
+          </a>
+          <button type="button" class="btn-text-close" id="modal-btn-dismiss">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- API Key Setting Modal -->
+  <div class="modal-overlay" id="api-modal-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-container api-modal-box" id="api-modal-container">
+      <button type="button" class="modal-close-btn" id="api-modal-close-btn" aria-label="닫기">✕</button>
+      <div class="modal-body">
+        <h2 class="modal-title" style="font-size: 1.35rem; display: flex; align-items: center; gap: 8px;">
+          <span>🔑</span> 실시간 최신 뉴스 무료 API 연동
+        </h2>
+        <p style="color: var(--text-secondary); font-size: 0.92rem; line-height: 1.6;">
+          <strong>GNews API</strong>는 이메일 등록만으로 <strong>하루 100건 무료</strong>로 대한민국 주요 언론사의 <strong>방금 발행된 실시간 최신 뉴스</strong>를 제공합니다.
+        </p>
+
+        <div class="api-guide-box">
+          <p class="guide-step"><strong>1단계:</strong> <a href="https://gnews.io/" target="_blank" rel="noopener noreferrer" class="link-highlight">gnews.io ↗</a> 접속 후 'Get API Key'를 눌러 무료 회원가입 (10초 소요)</p>
+          <p class="guide-step"><strong>2단계:</strong> 발급받은 API Key를 아래 입력창에 넣고 저장하세요.</p>
+        </div>
+
+        <div class="api-input-group">
+          <label for="input-gnews-key" class="api-label">GNews 무료 API Key</label>
+          <input type="text" id="input-gnews-key" class="api-input" placeholder="예: a1b2c3d4e5f6g7h8..." autocomplete="off">
+        </div>
+
+        <div class="modal-footer" style="margin-top: 10px;">
+          <button type="button" class="btn-primary" id="btn-save-api-key" style="padding: 10px 22px;">저장 및 최신 뉴스 불러오기</button>
+          <button type="button" class="btn-text-close" id="btn-clear-api-key" style="color: #ef4444;">키 삭제 (기본 모드)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
